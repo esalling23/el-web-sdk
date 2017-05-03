@@ -140,6 +140,9 @@
 
 	keystoneInst.set('twitter', twitterInstance);
 
+	// optional, will force cloudinary to serve images over https
+	keystoneInst.set('cloudinary secure', true);
+
 	// Load this site's models
 	keystoneInst.import('models');
 	// Load this site's routes
