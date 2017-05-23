@@ -1,10 +1,11 @@
 module.exports = {
 	dist: {
     options: {
-      style: 'expanded'
+      style: 'expanded', 
+      sourceMap: true
     },
     files: {
-      'public/styles/site.css': 'public/styles/site.scss',
+      'public/styles/core.css': 'public/styles/core.scss',
     }
   }
 };

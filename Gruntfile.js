@@ -30,9 +30,9 @@ module.exports = function(grunt) {
 	require('time-grunt')(grunt);
 
 	var jobDirs = [
-									'./grunt/*.js', 
-									'./sites/**/grunt/*.js'
-								];
+						'./grunt/*.js', 
+						'./sites/**/grunt/*.js'
+					];	
 
   // Use site modules arg only if defined
   if(sitesArg) {
@@ -56,26 +56,26 @@ module.exports = function(grunt) {
 
 	};
 
-	// Copies our nightly backup to the dev server
-	if(process.env.NODE_ENV == 'production') {
-		gruntJobsConfig['sftp'] = 
-		{
-		  options: {
-		      host: 'catan.dev.emerson.edu',
-		      username: 'node',
-				  privateKey: grunt.file.read("/home/node/.ssh/id_rsa"),
-		      showProgress: true,
-		      path: '/home/node/backups/engagement-lab/',
-		      srcBasePath: "dump/daily_bk/engagement-lab/",
-		      createDirectories: true
-		  },
-		  backup: {
-		      files: {
-		      	"./": "dump/daily_bk/engagement-lab/**"
-		      }
-		  }
-		};
-	}
+	// // Copies our nightly backup to the dev server
+	// if(process.env.NODE_ENV == 'production') {
+	// 	gruntJobsConfig['sftp'] = 
+	// 	{
+	// 	  options: {
+	// 	      host: 'catan.dev.emerson.edu',
+	// 	      username: 'node',
+	// 			  privateKey: grunt.file.read("/home/node/.ssh/id_rsa"),
+	// 	      showProgress: true,
+	// 	      path: '/home/node/backups/engagement-lab/',
+	// 	      srcBasePath: "dump/daily_bk/engagement-lab/",
+	// 	      createDirectories: true
+	// 	  },
+	// 	  backup: {
+	// 	      files: {
+	// 	      	"./": "dump/daily_bk/engagement-lab/**"
+	// 	      }
+	// 	  }
+	// 	};
+	// }
 
 	// Load all of our tasks from ./grunt/*.js and ./sites/**/grunt/*.js
 	var configs = require('load-grunt-configs')(grunt, gruntJobsConfig);
@@ -158,15 +158,15 @@ module.exports = function(grunt) {
 			'pm2deploy'
 		];
 
-	  if(!target)
-	    grunt.fatal('Must specify --target=staging|production');
+	  	if(!target)
+	    	grunt.fatal('Must specify --target=staging|production');
 
-	  // Set task deployment target
-	  tasks = tasks.map(function(task) {
-	  	return task + ':' + target;
+		// Set task deployment target
+		tasks = tasks.map(function(task) {
+	  		return task + ':' + target;
 		});
 
-	  // Version needs to be bumped first after confirming, unlesss skipped or staging deploy
+	    // Version needs to be bumped first after confirming, unlesss skipped or staging deploy
 		if(!skipVersion) {
 			tasks.push('bump:'+target);
 		}
