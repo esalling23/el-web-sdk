@@ -39,15 +39,15 @@ var serverPort = (process.env.NODE_ENV === 'staging') ? 3001 : 3000;
  * @param {Boolean} is there only one site being mounted?
  * @see https://www.npmjs.com/package/express-vhost
  */
-var mount = function(siteModuleName, singleDomain, callback) {
+var mount = function(siteModuleName, singleDomain, callback, start) {
 
 	var siteInst = require(siteModuleName)(__dirname, !singleDomain);
+	var sitePath = require.resolve(siteModuleName).replace('app.js', '');
 	var appInstance = siteInst.server();
 	
-	siteConfig(siteInst, function(configData) {
+	siteConfig(siteInst, sitePath, function(configData) {
 		
 		// Configure the site's domain
-		// Only engagement-lab-home has no configData.subdomain
 		// Don't use subdomain if this is a single-domain site
 		var siteDomain = (configData.subdomain === undefined || singleDomain) ? process.env.ROOT_DOMAIN : (configData.subdomain + '.' + process.env.ROOT_DOMAIN);
 
@@ -70,6 +70,8 @@ var mount = function(siteModuleName, singleDomain, callback) {
 
 				// Run any of this site's custom start logic
 				siteInst.start(appInstance);
+
+				// start();
 
 				logger.info('> Site ' + colors.rainbow(siteModuleName) + ' mounted'.italic + ' at ' + siteDomain);
  
@@ -95,11 +97,12 @@ var mount = function(siteModuleName, singleDomain, callback) {
  * @name server/launch
  */
 var launch = function(callback) {
+  
+  /* Global accessor for underscore  */
+	_ = require('underscore');
 
 	// Starts the server using express-vhost as middleware, trusting our nginx proxy
 	app.use(virtual.vhost(app.enabled('trust proxy')));
-
-	virtualServer.listen(serverPort, function() {
 
 		logger.info('███████╗███╗   ██╗ ██████╗  █████╗  ██████╗ ███████╗███╗   ███╗███████╗███╗   ██╗████████╗    ██╗      █████╗ ██████╗'.bgCyan.black);
 		logger.info('██╔════╝████╗  ██║██╔════╝ ██╔══██╗██╔════╝ ██╔════╝████╗ ████║██╔════╝████╗  ██║╚══██╔══╝    ██║     ██╔══██╗██╔══██╗'.bgCyan.black);
@@ -129,7 +132,9 @@ var launch = function(callback) {
 			for(var ind in arrSites) {
 				var singleDomain = arrSites.length === 1;
 				
-				mount(arrSites[ind], singleDomain);
+				mount(arrSites[ind], singleDomain, undefined, function() {
+					virtualServer.listen(serverPort);
+				});
 			}
 
 		}
@@ -139,7 +144,7 @@ var launch = function(callback) {
 
 		logger.info('##'.bold.bgWhite.red);		
 
-	});
+	// });
 
 };
 

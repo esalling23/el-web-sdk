@@ -23,10 +23,11 @@
 	// Global dependencies
 	var Slack = require('slack-node'),
 			Twitter = require('twitter'),
-			merge = require('merge'),
+			merge = require('merge'), 
+			compression = require('compression'),
 			KeystoneSlacker = require('keystone-slacker'),
 			FrameworkMiddleware = require('./middleware'),
-			compression = require('compression');
+			express = require('express');
 
 	var siteConfig = params.config, 
 			moduleRoot =  require.resolve(params.moduleName).replace('app.js', ''),
@@ -58,14 +59,12 @@
 							colors.cyan.underline(siteConfig.name) + 
 							' site module.'.underline);
 
-	appInst.use(compression());
-
 	// Init the keystone instance when it is opened
 	keystoneInst.init({
 
 		'brand': siteConfig.name,
 		'module root': moduleRoot,
-		// 'model prefix': (siteConfig.db_prefix !== undefined) ? siteConfig.db_prefix : siteConfig.database,
+		'model prefix': (siteConfig.db_prefix !== undefined) ? siteConfig.db_prefix : null,
 		'mongo': 'mongodb://localhost/' + siteConfig.database,
 
 		'frame guard': false,
@@ -85,7 +84,7 @@
 		'locals': {
 
 			_: require('underscore'),
-			env: keystoneInst.get('env'),
+			env: process.env.NODE_ENV,
 			utils: keystoneInst.utils,
 			editable: keystoneInst.content.editable
 
@@ -100,6 +99,30 @@
 		'cloudinary secure': true
 
 	});
+
+	appInst.use(express.static(__dirname  + '/../public'));
+	appInst.use(express.static(moduleRoot + '/public'));
+
+	appInst.set('views', moduleRoot + 'templates/views/');
+	appInst.engine('hbs', hbsInstance.engine);
+	appInst.set('view engine', 'hbs');
+
+	// Load this site's models
+	keystoneInst.import('models');
+
+	// keystoneInst.initDatabaseConfig();
+	keystoneInst.initExpressSession();
+
+	appInst.use(compression());	
+	appInst.use('/keystone', keystoneInst.Admin.Server.createStaticRouter(keystoneInst));
+
+	appInst.use(keystoneInst.get('session options').cookieParser);
+
+	appInst.use(keystoneInst.expressSession);
+	appInst.use(keystoneInst.session.persist);
+	appInst.use(require('connect-flash')());
+
+	appInst.use('/keystone', keystoneInst.Admin.Server.createDynamicRouter(keystoneInst));
 
 	// Used only for production, otherwise sessions are stored in-memory
 	if (process.env.NODE_ENV === 'production') {
@@ -140,13 +163,9 @@
 
 	keystoneInst.set('twitter', twitterInstance);
 
-	// optional, will force cloudinary to serve images over https
-	keystoneInst.set('cloudinary secure', true);
-
-	// Load this site's models
-	keystoneInst.import('models');
 	// Load this site's routes
 	keystoneInst.set('routes', require(moduleRoot + 'routes'));
+	appInst.use(require(moduleRoot + 'routes'));
 	 
 	// Configure Admin UI
 	keystoneInst.set('nav', siteConfig.admin_nav);
@@ -160,22 +179,13 @@
 	else
 		keystoneInst.set('cors allow origin', true);
 
-	keystoneInst.pre('routes', middleware.initLocals);
-	keystoneInst.pre('routes', middleware.initErrorHandlers);
-	keystoneInst.pre('routes', middleware.checkDebug);
-
-	// Mount to '/' (root of virtual host's subdomain)
-	keystoneInst.mount('/', appInst, {
-    onMount: function() {
-
-    	/*console.log(keystoneInst)
-
-			keystoneInst.app.get('/data', function(req, res, next, id) {
-				console.log(req.data)
-				next();
-			});*/
-		  callback(keystoneInst.app);
-    }
+	keystoneInst.openDatabaseConnection(function () {
+		var server = appInst.listen(process.env.PORT || 3001, function () {
+			callback(keystoneInst.app);
+			console.log('-------------------------------');
+			console.log('Express server ready on port %d', server.address().port);
+			console.log('-------------------------------');
+		});
 	});
 		
 });

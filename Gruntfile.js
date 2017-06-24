@@ -30,9 +30,8 @@ module.exports = function(grunt) {
 	require('time-grunt')(grunt);
 
 	var jobDirs = [
-						'./grunt/*.js', 
-						'./sites/**/grunt/*.js'
-					];	
+									'./grunt/*.js'
+								];
 
   // Use site modules arg only if defined
   if(sitesArg) {
@@ -56,28 +55,28 @@ module.exports = function(grunt) {
 
 	};
 
-	// // Copies our nightly backup to the dev server
-	// if(process.env.NODE_ENV == 'production') {
-	// 	gruntJobsConfig['sftp'] = 
-	// 	{
-	// 	  options: {
-	// 	      host: 'catan.dev.emerson.edu',
-	// 	      username: 'node',
-	// 			  privateKey: grunt.file.read("/home/node/.ssh/id_rsa"),
-	// 	      showProgress: true,
-	// 	      path: '/home/node/backups/engagement-lab/',
-	// 	      srcBasePath: "dump/daily_bk/engagement-lab/",
-	// 	      createDirectories: true
-	// 	  },
-	// 	  backup: {
-	// 	      files: {
-	// 	      	"./": "dump/daily_bk/engagement-lab/**"
-	// 	      }
-	// 	  }
-	// 	};
-	// }
+	// Copies our nightly backup to the dev server
+	/*if(process.env.NODE_ENV == 'production') {
+		gruntJobsConfig['sftp'] = 
+		{
+		  options: {
+		      host: 'catan.dev.emerson.edu',
+		      username: 'node',
+				  privateKey: grunt.file.read("/home/node/.ssh/id_rsa"),
+		      showProgress: true,
+		      path: '/home/node/backups/engagement-lab/',
+		      srcBasePath: "dump/daily_bk/engagement-lab/",
+		      createDirectories: true
+		  },
+		  backup: {
+		      files: {
+		      	"./": "dump/daily_bk/engagement-lab/**"
+		      }
+		  }
+		};
+	}*/
 
-	// Load all of our tasks from ./grunt/*.js and ./sites/**/grunt/*.js
+	// Load all of our tasks from ./grunt/*.js and site modules
 	var configs = require('load-grunt-configs')(grunt, gruntJobsConfig);
 	
 	// Project configurations
@@ -122,8 +121,18 @@ module.exports = function(grunt) {
 		'cssmin'
 	]);
 
+	grunt.registerTask('sync', [
+		'prompt:from_to',
+		'execute:ssh_tunnel_from',
+		'mongobin:dump',
+		'execute:ssh_tunnel_to',
+		'prompt:confirm_restore',
+		'mongobin:restore'
+	]);
+
 	// Task to compile script/styles
 	grunt.registerTask('compile', [
+		'sass:dist',
 		'uglify',
 		'concat',
 		'cssmin',
@@ -158,15 +167,15 @@ module.exports = function(grunt) {
 			'pm2deploy'
 		];
 
-	  	if(!target)
-	    	grunt.fatal('Must specify --target=staging|production');
+	  if(!target)
+	  	tasks.unshift('prompt:app_target');
 
-		// Set task deployment target
-		tasks = tasks.map(function(task) {
-	  		return task + ':' + target;
+	  // Set task deployment target
+	  tasks = tasks.map(function(task) {
+	  	return task + ':' + target;
 		});
 
-	    // Version needs to be bumped first after confirming, unlesss skipped or staging deploy
+	  // Version needs to be bumped first after confirming, unlesss skipped or staging deploy
 		if(!skipVersion) {
 			tasks.push('bump:'+target);
 		}
