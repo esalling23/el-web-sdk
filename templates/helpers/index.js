@@ -142,7 +142,7 @@ module.exports = function() {
         if(options.hash['format'] !== 'svg')
             options.hash['fetch_format'] = 'auto';
 
-        if(context.public_id) {
+        if((context) && (context.public_id)) {
             var imageName = context.public_id.concat('.', context.format);
             return cloudinary.url(imageName, options.hash).replace('http', 'https');
         } else if(typeof(context) === 'string') {
