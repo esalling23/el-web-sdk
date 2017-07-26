@@ -145,7 +145,7 @@ var launch = function(callback) {
 
 		logger.info('##'.bold.bgWhite.red);		
 
-	// });
+	});
 
 };
 
