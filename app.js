@@ -24,7 +24,7 @@ var express = require('express'),
 
 colors = require('colors');
 
-var serverPort = process.env.PORT || 3000;
+var serverPort = (process.env.NODE_ENV === 'staging') ? 3001 : 3000;
 
 /**
  * Mount a sub-module in /sites as a virtual host.
@@ -60,12 +60,13 @@ var mount = function(siteModuleName, singleDomain, callback, start) {
 				server: virtualServer,
 				keystone: siteInst.keystone
 
-			}, function() {
+			}, function(keystoneApp) {
 
 				// Register this app as a virtual host
 				virtual.register(
 					siteDomain,
-					appInstance
+					keystoneApp
+
 				);
 
 				// Run any of this site's custom start logic
@@ -132,7 +133,9 @@ var launch = function(callback) {
 			for(var ind in arrSites) {
 				var singleDomain = arrSites.length === 1;
 				
-				mount(arrSites[ind], singleDomain);
+				mount(arrSites[ind], singleDomain, undefined, function() {
+					virtualServer.listen(serverPort);
+				});
 			}
 
 		}
@@ -142,7 +145,7 @@ var launch = function(callback) {
 
 		logger.info('##'.bold.bgWhite.red);		
 
-	});
+	// });
 
 };
 
