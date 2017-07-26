@@ -14,10 +14,10 @@ var FrameworkMiddleware = (function() {
 	*/
 	this.initLocals = function(req, res, next) {
 
-    var locals = res.locals;
-    locals.user = req.user;
+	    var locals = res.locals;
+	    locals.user = req.user;
 
-    next();
+	    next();
 
 	};
 
@@ -25,6 +25,8 @@ var FrameworkMiddleware = (function() {
 	    Inits the error handler functions into `req`
 	*/
 	this.initErrorHandlers = function(req, res, next) {
+
+		console.log(req, res)
 	    
 	    res.err = function(err, title, message) {
 	        res.status(500).render('errors/500', {
