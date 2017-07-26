@@ -24,7 +24,7 @@ var express = require('express'),
 
 colors = require('colors');
 
-var serverPort = process.env.PORT || 3000;
+var serverPort = (process.env.NODE_ENV === 'staging') ? 3001 : 3000;
 
 /**
  * Mount a sub-module in /sites as a virtual host.
@@ -60,17 +60,18 @@ var mount = function(siteModuleName, singleDomain, callback, start) {
 				server: virtualServer,
 				keystone: siteInst.keystone
 
-			}, function() {
+			}, function(keystoneApp) {
 
 				// Register this app as a virtual host
 				virtual.register(
 					siteDomain,
-					appInstance
-
+					keystoneApp
 				);
 
 				// Run any of this site's custom start logic
 				siteInst.start(appInstance);
+
+				// start();
 
 				logger.info('> Site ' + colors.rainbow(siteModuleName) + ' mounted'.italic + ' at ' + siteDomain);
  
@@ -102,8 +103,6 @@ var launch = function(callback) {
 
 	// Starts the server using express-vhost as middleware, trusting our nginx proxy
 	app.use(virtual.vhost(app.enabled('trust proxy')));
-
-	virtualServer.listen(serverPort, function() {
 
 		logger.info('███████╗███╗   ██╗ ██████╗  █████╗  ██████╗ ███████╗███╗   ███╗███████╗███╗   ██╗████████╗    ██╗      █████╗ ██████╗'.bgCyan.black);
 		logger.info('██╔════╝████╗  ██║██╔════╝ ██╔══██╗██╔════╝ ██╔════╝████╗ ████║██╔════╝████╗  ██║╚══██╔══╝    ██║     ██╔══██╗██╔══██╗'.bgCyan.black);
@@ -145,7 +144,7 @@ var launch = function(callback) {
 
 		logger.info('##'.bold.bgWhite.red);		
 
-	});
+	// });
 
 };
 

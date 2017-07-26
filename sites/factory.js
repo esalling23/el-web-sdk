@@ -180,14 +180,12 @@
 		keystoneInst.set('cors allow origin', true);
 
 	keystoneInst.openDatabaseConnection(function () {
-		// var server = appInst.listen(process.env.PORT || 3001, function () {
-		// 	callback(keystoneInst.app);
-		// 	console.log('-------------------------------');
-		// 	console.log('Express server ready on port %d', server.address().port);
-		// 	console.log('-------------------------------');
-		// });
-
-		callback();
+		var server = appInst.listen(process.env.PORT || 3001, function () {
+			callback(keystoneInst.app);
+			console.log('-------------------------------');
+			console.log('Express server ready on port %d', server.address().port);
+			console.log('-------------------------------');
+		});
 	});
 		
 });
