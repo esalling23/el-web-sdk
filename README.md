@@ -14,6 +14,8 @@ Need code docs? We [got 'em](https://documentup.com/engagementgamelab/EL-Website
 
 ## Documentation
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/esalling23/el-web-sdk.svg)](https://greenkeeper.io/)
+
 ### Development Server Installation:
 ## Pre-requisites
 
