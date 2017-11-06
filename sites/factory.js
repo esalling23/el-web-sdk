@@ -24,7 +24,6 @@
 	var Slack = require('slack-node'),
 			Twitter = require('twitter'),
 			merge = require('merge'),
-			KeystoneSlacker = require('keystone-slacker'),
 			FrameworkMiddleware = require('./middleware');
 
 	var siteConfig = params.config, 
@@ -113,13 +112,6 @@
 
 	}
 
-	// Slack API instantiation
-	slackInstance = new Slack(process.env.SLACK_API_KEY);
-	slackInstance.setWebhook(process.env.SLACK_HOOK_URI);
-	slackInstance.channel = '#website_updates';
-	slackInstance.user = 'ELBot';
-	slackInstance.user_icon = 'http://res.cloudinary.com/engagement-lab-home/image/upload/v1454193996/site/logo_bot.png';
-
 	// Twitter API instantiation
 	twitterInstance = new Twitter({
 		consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -127,11 +119,7 @@
 		access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
 		access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 	});
-
-	// slack needs to be be accessible anywhere (using our keystone-slacker package)
-	var keystoneSlacker = new KeystoneSlacker(slackInstance, keystoneInst);
-	keystoneInst.set('slack', keystoneSlacker);
-
+	
 	// Save global server instance reference to keystone, in case needed by module
 	keystoneInst.set('appServer', appServer)
 
