@@ -21,6 +21,10 @@
  module.exports = function(siteInst, callback) {
 
 	var siteDir = siteInst.keystone._options['module root'];
+
+	console.log(siteInst.keystone._options['module root']);
+
+	
 	
 
 	require('fs').readFile(siteDir + '/config.json', {encoding: 'utf8'}, function (err, data) {
